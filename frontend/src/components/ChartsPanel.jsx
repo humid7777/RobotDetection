@@ -29,7 +29,7 @@ function MiniChart({ data, dataKey, color, title }) {
   );
 }
 
-export default function ChartsPanel({ metrics }) {
+export default function ChartsPanel({ metrics, side = 'right' }) {
   if (!metrics?.reward?.length) return null;
 
   const data = metrics.reward.map((r, i) => ({
@@ -42,19 +42,28 @@ export default function ChartsPanel({ metrics }) {
     path: metrics.path_length?.[i] || 0,
   }));
 
+  if (side === 'left') {
+    return (
+      <div className="charts-panel-left" style={{ marginTop: '16px' }}>
+        <div className="panel-header" style={{ marginBottom: '10px' }}>
+          <BarChart3 size={16} />
+          <h2 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Performance Trends</h2>
+        </div>
+        <MiniChart data={data} dataKey="reward" color="#818cf8" title="Reward vs Episode" />
+        <MiniChart data={data} dataKey="collisions" color="#ef4444" title="Collisions vs Episode" />
+        <MiniChart data={data} dataKey="path" color="#8b5cf6" title="Path Length vs Episode" />
+      </div>
+    );
+  }
+
   return (
     <div className="charts-panel glass-panel">
       <div className="panel-header">
         <BarChart3 size={16} />
-        <h2>Learning Progress</h2>
+        <h2>Learning Metrics</h2>
       </div>
-
-      <MiniChart data={data} dataKey="reward" color="#818cf8" title="Reward vs Episode" />
-      <MiniChart data={data} dataKey="collisions" color="#ef4444" title="Collisions vs Episode" />
-      <MiniChart data={data} dataKey="accuracy" color="#10b981" title="Accuracy vs Episode" />
       <MiniChart data={data} dataKey="precision" color="#f59e0b" title="Precision vs Episode" />
       <MiniChart data={data} dataKey="time" color="#6366f1" title="Time Taken vs Episode" />
-      <MiniChart data={data} dataKey="path" color="#8b5cf6" title="Path Length vs Episode" />
     </div>
   );
 }

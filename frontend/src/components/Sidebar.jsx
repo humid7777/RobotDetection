@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { Play, Square, RotateCcw, Gauge } from 'lucide-react';
+import ChartsPanel from './ChartsPanel';
 
-const ENTITIES = [
-  { type: 'worker', emoji: '👷', label: 'Worker', isDynamic: false },
-  { type: 'forklift', emoji: '🚜', label: 'Forklift', isDynamic: false },
-  { type: 'cart', emoji: '🛒', label: 'Cart', isDynamic: false },
-  { type: 'box', emoji: '📦', label: 'Box', isDynamic: false },
-  { type: 'pallet', emoji: '🪵', label: 'Pallet', isDynamic: false },
-  { type: 'target', emoji: '🏁', label: 'Target', isDynamic: false },
-];
-
-export default function Sidebar({ onStart, onPause, onReset, isTraining, setDraggedEntity, ws }) {
+export default function Sidebar({ onStart, onPause, onReset, isTraining, ws, metrics }) {
   const [speed, setSpeed] = useState(100);
 
   const handleSpeedChange = (e) => {
@@ -54,27 +46,9 @@ export default function Sidebar({ onStart, onPause, onReset, isTraining, setDrag
         </button>
       </div>
 
-      <div className="controls-group">
-        <h3>Entities (Drag to Grid)</h3>
-        <p className="hint-text">
-          Place obstacles before starting. Robot starts at top-left, target at bottom-right.
-        </p>
-        <div className="entity-list">
-          {ENTITIES.map((ent, idx) => (
-            <div
-              key={`${ent.type}-${idx}`}
-              className="entity-item"
-              draggable
-              onDragStart={() => setDraggedEntity(ent)}
-              onDragEnd={() => setDraggedEntity(null)}
-            >
-              <span className="entity-emoji">{ent.emoji}</span>
-              <span className="entity-label">{ent.label}</span>
-              <span className="entity-badge">Static</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {metrics?.reward?.length > 0 && (
+        <ChartsPanel metrics={metrics} side="left" />
+      )}
     </aside>
   );
 }

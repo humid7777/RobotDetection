@@ -13,7 +13,7 @@ class SimulationEnvironment:
     def __init__(self, grid_size=10):
         self.grid_size = grid_size
         self.robot_pos = (0, 0)
-        self.target_pos = (grid_size - 1, grid_size - 1)
+        self.target_pos = None  # User will drag to place, starts empty
         self.static_obstacles = []  # All obstacles are static
         self.step_count = 0
         self.max_steps = 2000  # High enough to guarantee it finds the target
@@ -31,6 +31,8 @@ class SimulationEnvironment:
         self.pickup_cell = None
         self.drop_cell = None
         self.carrying_box = False
+        if self.target_pos is None:
+            self.target_pos = (self.grid_size - 1, self.grid_size - 1)
         return self._get_state()
 
     def _get_state(self):
@@ -72,36 +74,51 @@ class SimulationEnvironment:
         # Bounds check
         if not (0 <= nx < self.grid_size and 0 <= ny < self.grid_size):
             nx, ny = self.robot_pos
-            reward -= 10
+            reward = -10
         else:
             # Obstacle check
             obs_set = set(tuple(s) for s in self.static_obstacles)
             if (nx, ny) in obs_set:
                 self.collision_cell = (nx, ny)
                 nx, ny = self.robot_pos
-                reward -= 50
+                reward = -50  # Keep collision penalty high
                 collision = True
 
         if nx != self.robot_pos[0] or ny != self.robot_pos[1]:
             # It actually moved
             if (nx, ny) in self.path:
-                reward -= 15  # Penalize loops
+                reward = -10  # Loop penalty
             else:
-                # Reward getting closer to target
+                # Potential-based reward shaping
                 old_dist = abs(self.target_pos[0] - self.robot_pos[0]) + abs(self.target_pos[1] - self.robot_pos[1])
                 new_dist = abs(self.target_pos[0] - nx) + abs(self.target_pos[1] - ny)
                 if new_dist < old_dist:
-                    reward += 15
+                    reward = -1  # Normal step closer
+                else:
+                    reward = -5  # Step going away from target
             
             self.robot_pos = (nx, ny)
             self.path.append(self.robot_pos)
 
+        # Dynamic target adaptation (relocate target if robot is taking too long)
+        if len(self.path) > 1000 or self.step_count >= 1000:
+            import random
+            obs_set = set(tuple(s) for s in self.static_obstacles)
+            possible_cells = [
+                (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
+                if (x, y) != self.robot_pos and (x, y) not in obs_set
+            ]
+            if possible_cells:
+                self.target_pos = random.choice(possible_cells)
+            self.step_count = 0
+            self.path = [self.robot_pos]
+
         # Target reached
         if self.robot_pos == tuple(self.target_pos):
-            reward += 500
+            reward = 100
             done = True
 
-        # Timeout
+        # Timeout (only triggers if adaptation wasn't reset)
         if self.step_count >= self.max_steps:
             done = True
 
@@ -110,7 +127,7 @@ class SimulationEnvironment:
     def get_grid_state(self):
         return {
             "robot": list(self.robot_pos),
-            "target": list(self.target_pos),
+            "target": list(self.target_pos) if self.target_pos else None,
             "static": [list(s) if isinstance(s, (list, tuple)) else s for s in self.static_obstacles],
             "grid_size": self.grid_size,
             "path": [list(p) for p in self.path],

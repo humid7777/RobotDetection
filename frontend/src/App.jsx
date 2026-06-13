@@ -43,17 +43,13 @@ function App() {
 
   return (
     <div className="app-container">
-      <header className="app-header glass-panel">
-        <div className="logo">
+      <header className="app-header glass-panel" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '12px 20px' }}>
+        <div className="header-left"></div>
+        <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
           <Activity color="#6366f1" size={26} />
-          <h1>NeuroMorph Reflex Navigator</h1>
+          <h1 style={{ margin: 0 }}>NeuroMorph Reflex Navigator</h1>
         </div>
-        <div className="header-center">
-          <span className="episode-badge">
-            Episode {ep} / {total}
-          </span>
-        </div>
-        <div className="header-status">
+        <div className="header-status" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           <span className={`status-dot ${gameState?.is_training ? 'active' : ''}`}></span>
           {gameState?.is_training ? 'Training Active' : 'Idle'}
         </div>
@@ -65,8 +61,8 @@ function App() {
           onPause={handlePause}
           onReset={handleReset}
           isTraining={gameState?.is_training}
-          setDraggedEntity={setDraggedEntity}
           ws={ws}
+          metrics={gameState?.metrics}
         />
 
         <div className="center-panel">
@@ -75,20 +71,47 @@ function App() {
               <LayoutDashboard size={16} />
               <h2>Live Simulation — 🏭 Warehouse</h2>
             </div>
-            {gameState?.grid && (
-              <SimulationGrid
-                gridData={gameState.grid}
-                step={gameState.step}
-                onDrop={handleCellDrop}
-              />
-            )}
+            
+            <div className="grid-main-row" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+              {/* Compact Drag Palette at Top Left of the Grid */}
+              <div className="compact-drag-palette" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '70px', flexShrink: 0, padding: '4px' }}>
+                <div
+                  className="entity-item compact-item"
+                  draggable
+                  onDragStart={() => setDraggedEntity({ type: 'box', emoji: '📦', label: 'Box', isDynamic: false })}
+                  onDragEnd={() => setDraggedEntity(null)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', cursor: 'grab' }}
+                >
+                  <span className="entity-emoji" style={{ fontSize: '1.6rem' }}>📦</span>
+                  <span className="entity-label" style={{ fontSize: '0.7rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Box</span>
+                </div>
+                
+                <div
+                  className="entity-item compact-item"
+                  draggable
+                  onDragStart={() => setDraggedEntity({ type: 'target', emoji: '🏁', label: 'Target', isDynamic: false })}
+                  onDragEnd={() => setDraggedEntity(null)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 4px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', cursor: 'grab' }}
+                >
+                  <span className="entity-emoji" style={{ fontSize: '1.6rem' }}>🏁</span>
+                  <span className="entity-label" style={{ fontSize: '0.7rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Target</span>
+                </div>
+              </div>
+
+              {gameState?.grid && (
+                <SimulationGrid
+                  gridData={gameState.grid}
+                  step={gameState.step}
+                  onDrop={handleCellDrop}
+                />
+              )}
+            </div>
           </div>
         </div>
 
         <div className="right-panel">
           <MetricsPanel state={gameState} />
-          <ChartsPanel metrics={gameState?.metrics} />
-          <PresentationPanel summaries={gameState?.episode_summaries} />
+          <ChartsPanel metrics={gameState?.metrics} side="right" />
         </div>
       </main>
     </div>
