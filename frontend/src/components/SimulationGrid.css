@@ -1,0 +1,126 @@
+.grid-board {
+  display: grid;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: clamp(0.9rem, 1.5vw, 1.6rem);
+  transition: background-color 0.15s;
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+.grid-cell:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Path trail */
+.cell-path {
+  background: rgba(99, 102, 241, 0.06);
+}
+.cell-path::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.3);
+}
+
+/* Robot cell */
+.cell-robot {
+  background: rgba(99, 102, 241, 0.18) !important;
+  animation: robot-pulse 1.8s infinite;
+  z-index: 10;
+}
+.cell-robot::after { display: none; }
+
+@keyframes robot-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: inset 0 0 12px 2px rgba(99, 102, 241, 0.2); }
+}
+
+.robot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 1;
+}
+
+.robot-emoji {
+  font-size: inherit;
+}
+
+.robot-arrow {
+  font-size: 0.5em;
+  color: #818cf8;
+  transition: transform 0.2s;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+/* Target */
+.cell-target {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+/* Static obstacle */
+.cell-static {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Collision Flash */
+.cell-collision {
+  animation: flash-red 0.5s ease-out forwards;
+}
+
+@keyframes flash-red {
+  0% { background: rgba(239, 68, 68, 0.8); box-shadow: inset 0 0 20px rgba(239, 68, 68, 1); }
+  100% { background: rgba(239, 68, 68, 0.1); }
+}
+
+/* Pickup Flash */
+.cell-pickup {
+  animation: flash-yellow 0.5s ease-out forwards;
+}
+
+@keyframes flash-yellow {
+  0% { background: rgba(234, 179, 8, 0.8); box-shadow: inset 0 0 20px rgba(234, 179, 8, 1); }
+  100% { background: rgba(234, 179, 8, 0.1); }
+}
+
+/* Drop Flash */
+.cell-drop {
+  animation: flash-green 0.5s ease-out forwards;
+}
+
+@keyframes flash-green {
+  0% { background: rgba(34, 197, 94, 0.8); box-shadow: inset 0 0 20px rgba(34, 197, 94, 1); }
+  100% { background: rgba(34, 197, 94, 0.1); }
+}
+
+/* Carrying Badge */
+.carrying-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 0.6em;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 1px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
