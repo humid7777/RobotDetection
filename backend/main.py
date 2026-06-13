@@ -20,7 +20,7 @@ GRID_SIZE = 10
 NUM_EPISODES = 10
 
 env = SimulationEnvironment(grid_size=GRID_SIZE)
-agent = QLearningAgent(num_actions=NUM_ACTIONS, learning_rate=0.5, epsilon=0.9, epsilon_decay=0.72)
+agent = QLearningAgent(num_actions=NUM_ACTIONS, learning_rate=0.5, discount_factor=0.95, epsilon=1.0, epsilon_decay=0.75)
 
 is_training = False
 current_episode = 0
@@ -151,7 +151,7 @@ async def simulation_ws(websocket: WebSocket):
                 is_training = False
                 current_episode = 0
                 env = SimulationEnvironment(grid_size=GRID_SIZE)
-                agent = QLearningAgent(num_actions=NUM_ACTIONS, learning_rate=0.5, epsilon=0.9, epsilon_decay=0.72)
+                agent = QLearningAgent(num_actions=NUM_ACTIONS, learning_rate=0.5, discount_factor=0.95, epsilon=1.0, epsilon_decay=0.75)
                 metrics = {k: [] for k in metrics}
                 initial_static = []
                 episode_summaries = {}

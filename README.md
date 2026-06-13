@@ -1,10 +1,20 @@
-# NeuroMorph Reflex Navigator
+# RobotDetection — RL Navigation Simulator
 
-> **Obstacle Avoidance Robot Simulation** — A robot that learns navigation patterns similarly to reflex actions in humans.
+> **Reinforcement Learning Robot Navigation** — A robot that learns to find the shortest path to a target on a 10×10 grid, avoiding obstacles, using Q-learning.
+
+---
 
 ## 🧠 Concept
 
-This project demonstrates **neuromorphic-inspired learning**: a robot navigates a dynamic 10×10 grid environment (Warehouse), learning to avoid moving and static obstacles using **Q-learning reinforcement learning**. Over 10 episodes, the robot progresses from random exploration to smooth, collision-free navigation — mirroring how humans develop reflexes through repeated experience.
+This project demonstrates **Q-learning reinforcement learning** in action: a robot navigates a 10×10 warehouse grid, learning to avoid static obstacles and reach a target destination. Over 10 episodes, the robot progresses from random exploration to near-optimal, collision-free navigation — the Q-table accumulates experience across all episodes, growing smarter with every run.
+
+Key innovations:
+- **8-directional movement** (including diagonals) for shortest-path navigation
+- **Experience replay** — the agent replays past transitions 8 times per step for fast convergence
+- **Rich state encoding** — robot sees direction to target, obstacle radar, and revisit memory
+- **Real-time visualization** — watch the robot learn live in the browser via WebSocket
+
+---
 
 ## 🚀 Quick Start
 
@@ -12,78 +22,153 @@ This project demonstrates **neuromorphic-inspired learning**: a robot navigates 
 - **Python 3.10+**
 - **Node.js 18+**
 
-### Backend Setup
+### Step 1 — Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
 ```
-The backend runs on `http://localhost:8001`.
+Backend runs on **`http://localhost:8001`**
 
-### Frontend Setup
+### Step 2 — Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-The frontend runs on `http://localhost:5174` (or the next available port).
+Frontend runs on **`http://localhost:5173`** (check terminal for the exact port)
+
+### Step 3 — Open in Browser
+Navigate to the URL shown in your terminal. The dashboard auto-connects to the backend via WebSocket.
+
+---
 
 ## 🎮 How to Use
 
-1. **Select Mode**: Choose Hospital or Warehouse from the sidebar.
-2. **Place Obstacles**: Drag entities (doctors, nurses, boxes, etc.) from the sidebar onto the grid.
-3. **Adjust Speed**: Use the speed slider to control simulation speed (0.5x–10x).
-4. **Start Training**: Click "Start 10 Episodes" and watch the robot learn.
-5. **Observe Learning**: Watch collisions decrease and paths improve across episodes.
-6. **Review Analytics**: Check the right panel for metrics, charts, and the before/after comparison.
+1. **Place Obstacles**: Drag 📦 **Box** items from the left palette onto the grid.
+2. **Place Target**: Drag 🏁 **Target** onto any grid cell. If none is placed, defaults to bottom-right `(9, 9)`.
+3. **Adjust Speed**: Use the speed slider (0.5x – 10x).
+4. **Start Training**: Click **"Start 10 Episodes"** and watch the robot learn in real time.
+5. **Observe Learning**: Collisions decrease, path length shortens, routes become more direct.
+6. **Review Analytics**: Check the right panel for live metrics and the path length vs episode chart.
+7. **Pause / Reset**: Use **Pause** to stop mid-run, or **Reset All** to clear the grid and start fresh.
 
-## 🏗️ Architecture
+---
+
+## 🏗️ Project Structure
 
 ```
+RobotDetection/
 ├── backend/
-│   ├── main.py           # FastAPI server with WebSocket
-│   ├── environment.py    # 10×10 grid simulation logic
-│   ├── rl_agent.py       # Q-learning agent
+│   ├── main.py              # FastAPI WebSocket server & training loop
+│   ├── environment.py       # 10×10 grid simulation, reward logic
+│   ├── rl_agent.py          # Q-learning agent with experience replay
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx       # Main dashboard layout
+│   │   ├── App.jsx                      # Main dashboard layout
 │   │   ├── components/
-│   │   │   ├── Sidebar.jsx           # Mode, speed, controls, entities
-│   │   │   ├── SimulationGrid.jsx    # 10×10 grid renderer
-│   │   │   ├── MetricsPanel.jsx      # Live metrics display
-│   │   │   ├── ChartsPanel.jsx       # Learning progress charts
-│   │   │   └── PresentationPanel.jsx # Before/After comparison
-│   │   └── ...
+│   │   │   ├── Sidebar.jsx              # Controls, speed, entity palette
+│   │   │   ├── SimulationGrid.jsx       # Live 10×10 grid renderer
+│   │   │   ├── MetricsPanel.jsx         # Live metrics display
+│   │   │   └── ChartsPanel.jsx          # Learning progress charts
+│   │   └── index.css
 │   └── package.json
 └── README.md
 ```
 
-## 🤖 Robot Movement
+---
 
-The robot uses **orientation-aware movement** (no backward movement allowed):
-- **Forward**: Move in the direction the robot is facing
-- **Turn Left**: Rotate 90° counterclockwise and move
-- **Turn Right**: Rotate 90° clockwise and move
-- **Wait**: Stay in place (penalized)
+## 🤖 Robot Movement — 8 Directions
+
+The robot moves in all **8 compass directions**, including diagonals, allowing it to take the shortest geometric path:
+
+| Action | Direction | Offset (dx, dy) |
+|--------|-----------|-----------------|
+| `ACTION_RIGHT` | → Right | (1, 0) |
+| `ACTION_UP` | ↑ Up | (0, −1) |
+| `ACTION_DOWN` | ↓ Down | (0, 1) |
+| `ACTION_LEFT` | ← Left | (−1, 0) |
+| `ACTION_TR` | ↗ Top-Right | (1, −1) |
+| `ACTION_TL` | ↖ Top-Left | (−1, −1) |
+| `ACTION_BR` | ↘ Bottom-Right | (1, 1) |
+| `ACTION_BL` | ↙ Bottom-Left | (−1, 1) |
+
+Diagonal moves cover two axes in one step, enabling significantly shorter paths.
+
+---
 
 ## 📊 Reward Structure
 
-| Action | Reward |
-|--------|--------|
-| Reach destination | +100 |
-| Collision | −100 |
-| Near miss | −30 |
-| Unnecessary stop | −10 |
-| Each step | −2 |
-| Forward progress | +5 |
-| Collision-free completion | +20 |
+| Condition | Reward |
+|-----------|--------|
+| Reach the target 🏁 | **+500** |
+| Step closer to target (Chebyshev) | **+2** |
+| Step away from target | **−3** |
+| Revisit a cell already in path | **−20** |
+| Hit grid boundary | **−10** |
+| Collide with an obstacle 📦 | **−50** |
+
+### Dynamic Target Adaptation
+
+If the robot exceeds **1000 steps** without reaching the target, the target is automatically relocated to a random free cell and the episode ends. This prevents the agent from getting permanently stuck.
+
+---
+
+## 🧠 Q-Learning Hyperparameters
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Learning Rate (α) | 0.5 | Fast value updates |
+| Discount Factor (γ) | 0.95 | Values future rewards highly |
+| Initial Epsilon (ε) | 1.0 | Full exploration at start |
+| Epsilon Decay | 0.75 per episode | Converges to exploitation by episode 10 |
+| Min Epsilon | 0.05 | Always keeps 5% exploration |
+| Max Steps / Episode | 1000 | Hard per-episode budget |
+| Replay Buffer Size | 2000 | Stores past transitions |
+| Replay Batch / Step | 8 | Replays 8 random past transitions per step |
+
+### Experience Replay
+
+After every step, the agent samples **8 random past transitions** from a 2000-transition replay buffer and runs Q-table updates on all of them. This multiplies the effective learning signal per step by ~9×, enabling the robot to converge to an optimal policy within just 10 episodes.
+
+### State Encoding
+
+The robot's state is a **19-dimensional tuple** encoding:
+- **Relative direction to target** (`sx`, `sy`) — −1/0/1 on each axis
+- **Chebyshev distance bucket** — `0` (≤2 steps), `1` (≤5 steps), `2` (far)
+- **8-directional obstacle radar** — `0` free, `1` wall, `2` obstacle
+- **8-directional revisit memory** — `1` if that neighbor was already visited this episode
+
+---
 
 ## 📈 Learning Progression
 
 | Phase | Episodes | Behavior |
 |-------|----------|----------|
-| Exploration | 1–2 | Random movements, frequent collisions |
-| Learning | 3–5 | Developing basic avoidance reflexes |
-| Refinement | 6–8 | Improved routes, fewer collisions |
-| Mastery | 9–10 | Smooth navigation, zero collisions |
+| 🔴 Exploration | 1–3 | Random movements, frequent collisions, building Q-table |
+| 🟡 Learning | 4–6 | Developing obstacle avoidance, reducing loops |
+| 🟢 Refinement | 7–8 | Shorter, more direct routes |
+| ✅ Mastery | 9–10 | Near-optimal path, minimal or zero collisions |
+
+---
+
+## 🔁 Visual Feedback
+
+| Event | Grid Flash |
+|-------|-----------|
+| Collision with obstacle | 🔴 Red flash |
+| Robot path trail | 🔵 Blue-purple dots |
+| Target cell | 🟢 Green highlight |
+| Robot position | 🤖 Pulsing indigo glow |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python, FastAPI, WebSocket |
+| RL Algorithm | Q-Learning with Experience Replay |
+| Frontend | React (Vite), Vanilla CSS |
+| Communication | WebSocket (real-time) |

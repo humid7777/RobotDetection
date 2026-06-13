@@ -16,9 +16,10 @@ class SimulationEnvironment:
         self.target_pos = None  # User will drag to place, starts empty
         self.static_obstacles = []  # All obstacles are static
         self.step_count = 0
-        self.max_steps = 2000  # High enough to guarantee it finds the target
+        self.max_steps = 1000  # Per-episode budget
         self.path = []
-        self.collision_cell = None  # None because we removed colliding red flashes
+        self.path_set = set()  # O(1) revisit checking
+        self.collision_cell = None
         self.pickup_cell = None
         self.drop_cell = None
         self.carrying_box = False
@@ -27,6 +28,7 @@ class SimulationEnvironment:
         self.robot_pos = (0, 0)
         self.step_count = 0
         self.path = [self.robot_pos]
+        self.path_set = {self.robot_pos}
         self.collision_cell = None
         self.pickup_cell = None
         self.drop_cell = None
@@ -86,22 +88,25 @@ class SimulationEnvironment:
 
         if nx != self.robot_pos[0] or ny != self.robot_pos[1]:
             # It actually moved
-            if (nx, ny) in self.path:
-                reward = -10  # Loop penalty
+            if (nx, ny) in self.path_set:
+                reward = -20  # Stronger loop penalty — discourage going in circles
             else:
-                # Potential-based reward shaping
-                old_dist = abs(self.target_pos[0] - self.robot_pos[0]) + abs(self.target_pos[1] - self.robot_pos[1])
-                new_dist = abs(self.target_pos[0] - nx) + abs(self.target_pos[1] - ny)
+                # Chebyshev distance-based reward shaping (works well with diagonals)
+                old_dist = max(abs(self.target_pos[0] - self.robot_pos[0]),
+                               abs(self.target_pos[1] - self.robot_pos[1]))
+                new_dist = max(abs(self.target_pos[0] - nx),
+                               abs(self.target_pos[1] - ny))
                 if new_dist < old_dist:
-                    reward = -1  # Normal step closer
+                    reward = 2   # Positive nudge for getting closer
                 else:
-                    reward = -5  # Step going away from target
-            
+                    reward = -3  # Mild penalty for moving away
+
             self.robot_pos = (nx, ny)
             self.path.append(self.robot_pos)
+            self.path_set.add(self.robot_pos)
 
         # Dynamic target adaptation (relocate target if robot is taking too long)
-        if len(self.path) > 1000 or self.step_count >= 1000:
+        if self.step_count >= self.max_steps:
             import random
             obs_set = set(tuple(s) for s in self.static_obstacles)
             possible_cells = [
@@ -110,15 +115,14 @@ class SimulationEnvironment:
             ]
             if possible_cells:
                 self.target_pos = random.choice(possible_cells)
-            self.step_count = 0
-            self.path = [self.robot_pos]
+            # Episode ends — target relocation triggers done below
 
         # Target reached
         if self.robot_pos == tuple(self.target_pos):
-            reward = 100
+            reward = 500  # Big reward for success
             done = True
 
-        # Timeout (only triggers if adaptation wasn't reset)
+        # Timeout
         if self.step_count >= self.max_steps:
             done = True
 
