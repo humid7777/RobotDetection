@@ -15,8 +15,8 @@ class QLearningAgent:
         # Experience replay buffer — stores last 2000 transitions
         # Replaying past experiences multiple times per step is the single
         # biggest boost to learning speed for a tabular Q-learner.
-        self.replay_buffer = deque(maxlen=2000)
-        self.replay_batch = 8  # How many past transitions to replay each step
+        self.replay_buffer = deque(maxlen=5000)
+        self.replay_batch = 32  # Increase replay batch for faster learning
 
     def _key(self, state):
         return state  # state is a tuple, already hashable
@@ -66,14 +66,11 @@ class QLearningAgent:
 
 def extract_state(robot_pos, target_pos, obstacles, path, grid_size=10, carrying_box=False):
     """
-    Rich state encoding:
-    - Relative direction to target (sx, sy): -1/0/1 on each axis
-    - Distance bucket to target: 0=very close (≤2), 1=medium (≤5), 2=far
-    - 8-directional obstacle radar: 0=free, 1=wall, 2=obstacle
-    - 8-directional revisit flags: 1=already visited, 0=fresh
-
-    This gives the robot spatial awareness so it can generalize across
-    positions rather than memorizing one path.
+    Simplified State Encoding (Massively reduces state space for faster learning):
+    - Relative direction to target (sx, sy): -1/0/1 on each axis (9 states)
+    - 8-directional boolean obstacle radar: 0=free, 1=blocked (256 states)
+    Total states: 9 * 256 = 2304 states.
+    Small enough for tabular Q-learning to master in 10 episodes.
     """
     rx, ry = robot_pos
     tx, ty = target_pos
@@ -84,32 +81,16 @@ def extract_state(robot_pos, target_pos, obstacles, path, grid_size=10, carrying
     sx = (1 if dx > 0 else (-1 if dx < 0 else 0))
     sy = (1 if dy > 0 else (-1 if dy < 0 else 0))
 
-    # Chebyshev distance bucket
-    chebyshev = max(abs(dx), abs(dy))
-    if chebyshev <= 2:
-        dist_bucket = 0
-    elif chebyshev <= 5:
-        dist_bucket = 1
-    else:
-        dist_bucket = 2
-
-    # 8-directional obstacle radar (1 step away)
+    # 8-directional boolean obstacle radar (1 step away)
     directions = [(1,0),(0,-1),(0,1),(-1,0),(1,-1),(-1,-1),(1,1),(-1,1)]
     radar = []
-    path_set = set(path)
     for ddx, ddy in directions:
         nx, ny = rx + ddx, ry + ddy
         if not (0 <= nx < grid_size and 0 <= ny < grid_size):
-            radar.append(1)   # wall
+            radar.append(1)   # blocked (wall)
         elif (nx, ny) in obstacles:
-            radar.append(2)   # obstacle
+            radar.append(1)   # blocked (obstacle)
         else:
             radar.append(0)   # free
 
-    # 8-directional revisit memory
-    visited = tuple(
-        1 if (rx + ddx, ry + ddy) in path_set else 0
-        for ddx, ddy in directions
-    )
-
-    return (sx, sy, dist_bucket) + tuple(radar) + visited
+    return (sx, sy) + tuple(radar)

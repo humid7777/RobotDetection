@@ -89,17 +89,17 @@ class SimulationEnvironment:
         if nx != self.robot_pos[0] or ny != self.robot_pos[1]:
             # It actually moved
             if (nx, ny) in self.path_set:
-                reward = -20  # Stronger loop penalty — discourage going in circles
+                reward = -10  # Revisit penalty
             else:
-                # Chebyshev distance-based reward shaping (works well with diagonals)
+                # Chebyshev distance-based reward shaping
                 old_dist = max(abs(self.target_pos[0] - self.robot_pos[0]),
                                abs(self.target_pos[1] - self.robot_pos[1]))
                 new_dist = max(abs(self.target_pos[0] - nx),
                                abs(self.target_pos[1] - ny))
                 if new_dist < old_dist:
-                    reward = 2   # Positive nudge for getting closer
+                    reward = -1  # Step closer
                 else:
-                    reward = -3  # Mild penalty for moving away
+                    reward = -5  # Step away
 
             self.robot_pos = (nx, ny)
             self.path.append(self.robot_pos)
@@ -119,7 +119,7 @@ class SimulationEnvironment:
 
         # Target reached
         if self.robot_pos == tuple(self.target_pos):
-            reward = 500  # Big reward for success
+            reward = 100
             done = True
 
         # Timeout

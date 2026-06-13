@@ -98,14 +98,15 @@ Diagonal moves cover two axes in one step, enabling significantly shorter paths.
 
 ---
 
+
 ## 📊 Reward Structure
 
 | Condition | Reward |
 |-----------|--------|
-| Reach the target 🏁 | **+500** |
-| Step closer to target (Chebyshev) | **+2** |
-| Step away from target | **−3** |
-| Revisit a cell already in path | **−20** |
+| Reach the target 🏁 | **+100** |
+| Step closer to target | **−1** |
+| Step away from target | **−5** |
+| Revisit a cell already in path | **−10** |
 | Hit grid boundary | **−10** |
 | Collide with an obstacle 📦 | **−50** |
 
@@ -125,20 +126,18 @@ If the robot exceeds **1000 steps** without reaching the target, the target is a
 | Epsilon Decay | 0.75 per episode | Converges to exploitation by episode 10 |
 | Min Epsilon | 0.05 | Always keeps 5% exploration |
 | Max Steps / Episode | 1000 | Hard per-episode budget |
-| Replay Buffer Size | 2000 | Stores past transitions |
-| Replay Batch / Step | 8 | Replays 8 random past transitions per step |
+| Replay Buffer Size | 5000 | Stores past transitions |
+| Replay Batch / Step | 32 | Replays 32 random past transitions per step |
 
 ### Experience Replay
 
-After every step, the agent samples **8 random past transitions** from a 2000-transition replay buffer and runs Q-table updates on all of them. This multiplies the effective learning signal per step by ~9×, enabling the robot to converge to an optimal policy within just 10 episodes.
+After every step, the agent samples **32 random past transitions** from a 5000-transition replay buffer and runs Q-table updates on all of them. This multiplies the effective learning signal per step by 33×, enabling the robot to converge to an optimal policy within just 10 episodes.
 
 ### State Encoding
 
-The robot's state is a **19-dimensional tuple** encoding:
-- **Relative direction to target** (`sx`, `sy`) — −1/0/1 on each axis
-- **Chebyshev distance bucket** — `0` (≤2 steps), `1` (≤5 steps), `2` (far)
-- **8-directional obstacle radar** — `0` free, `1` wall, `2` obstacle
-- **8-directional revisit memory** — `1` if that neighbor was already visited this episode
+The robot's state is a heavily optimized **10-dimensional tuple** encoding exactly what it needs to generalize efficiently without memory bloat (only 2,304 possible states total):
+- **Relative direction to target** (`sx`, `sy`) — −1/0/1 on each axis (9 states)
+- **8-directional boolean obstacle radar** — `0` free, `1` blocked (256 states)
 
 ---
 
