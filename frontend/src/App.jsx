@@ -111,6 +111,19 @@ function App() {
                 />
               )}
             </div>
+
+            <div className="how-to-use-panel" style={{ marginTop: '25px', padding: '15px 20px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>💡</span> How to use this simulator
+              </h3>
+              <ol style={{ margin: 0, paddingLeft: '22px', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                <li><strong>Design the Warehouse:</strong> Drag and drop 📦 <strong>Boxes</strong> onto the grid to create walls or obstacles.</li>
+                <li><strong>Set the Goal:</strong> Drag the 🏁 <strong>Target</strong> to wherever you want the robot to navigate to.</li>
+                <li><strong>Train the Brain:</strong> Click <strong>"Start 10 Episodes"</strong> on the left to watch the AI learn via Q-Learning in real-time.</li>
+                <li><strong>Watch it Learn:</strong> Notice how the robot crashes initially, but rapidly discovers the shortest geometric path by Episode 10!</li>
+              </ol>
+            </div>
+
           </div>
         </div>
 
