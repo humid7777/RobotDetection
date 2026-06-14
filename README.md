@@ -181,3 +181,29 @@ The robot's state is a heavily optimized **10-dimensional tuple** encoding exact
 | RL Algorithm | Q-Learning with Experience Replay |
 | Frontend | React (Vite), Vanilla CSS |
 | Communication | WebSocket (real-time) |
+
+
+## 📸 ScreenShots
+**1)Full Website interface**
+
+<img width="1917" height="1047" alt="image" src="https://github.com/user-attachments/assets/efa8c2e2-97d6-48bb-ab56-9954116c8e72" />
+
+**2) 10x10 Grid and Drag Box and Target**
+
+<img width="1107" height="955" alt="image" src="https://github.com/user-attachments/assets/0e95bd5f-7a44-47d0-86c9-72d6c708b657" />
+
+**3) Metrics**
+
+<img width="392" height="501" alt="image" src="https://github.com/user-attachments/assets/0b802e1a-1e9f-4d40-b7a3-f14b49bb953c" />
+
+
+**4) Graphs**
+
+<img width="381" height="555" alt="image" src="https://github.com/user-attachments/assets/3cf6cfe0-0a5e-492d-b8ba-3d0d663553d2" />
+<img width="402" height="420" alt="image" src="https://github.com/user-attachments/assets/43bb7f21-fe84-4ac6-8416-d8dece586fd3" />
+
+**5) Controll Buttons**
+
+<img width="387" height="282" alt="image" src="https://github.com/user-attachments/assets/002ee599-a360-4f1c-a3d9-9013aa25163d" />
+
+
