@@ -16,7 +16,17 @@ Key innovations:
 
 ---
 
-## 🚀 Quick Start
+## 🌍 Live Deployment
+
+This project is deployed and fully operational in the cloud:
+- **Frontend App**: Deployed on Vercel
+- **AI Backend**: Running on Render (`wss://neuromorphicreflexnavigator.onrender.com/ws/simulation`)
+
+*Real-time communication is handled via WebSockets, allowing you to watch the Q-learning process live from anywhere.*
+
+---
+
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 - **Python 3.10+**
