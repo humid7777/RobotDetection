@@ -120,7 +120,6 @@ function App() {
                 <li><strong>Design the Warehouse:</strong> Drag and drop 📦 <strong>Boxes</strong> onto the grid to create walls or obstacles.</li>
                 <li><strong>Set the Goal:</strong> Drag the 🏁 <strong>Target</strong> to wherever you want the robot to navigate to.</li>
                 <li><strong>Train the Brain:</strong> Click <strong>"Start 10 Episodes"</strong> on the left to watch the AI learn via Q-Learning in real-time.</li>
-                <li><strong>Watch it Learn:</strong> Notice how the robot crashes initially, but rapidly discovers the shortest geometric path by Episode 10!</li>
               </ol>
             </div>
 
