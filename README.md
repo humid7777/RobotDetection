@@ -19,7 +19,7 @@ Key innovations:
 ## 🌍 Live Deployment
 
 This project is deployed and fully operational in the cloud:
-- **Frontend App**: Deployed on Vercel ( `https://neuromorphicreflexnavigator.vercel.app/`)
+- **Frontend App**: Deployed on Vercel ( https://neuromorphicreflexnavigator.vercel.app/)
 - **AI Backend**: Running on Render (`wss://neuromorphicreflexnavigator.onrender.com/ws/simulation`)
 
 *Real-time communication is handled via WebSockets, allowing you to watch the Q-learning process live from anywhere.*
