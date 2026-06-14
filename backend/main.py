@@ -88,7 +88,7 @@ async def run_training_loop(websocket):
             if collision:
                 ep_collisions += 1
             ep_total_moves += 1
-            if reward > 0:
+            if reward == -1 or reward == 100:  # -1 is step closer, 100 is target reached
                 ep_forward_progress += 1
 
             state = next_state

@@ -14,7 +14,12 @@ function App() {
   const [draggedEntity, setDraggedEntity] = useState(null);
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8001/ws/simulation');
+    // Dynamically switch between local and production URLs
+    const WS_URL = import.meta.env.PROD 
+      ? 'wss://neuromorphicreflexnavigator.onrender.com/ws/simulation' 
+      : 'ws://localhost:8001/ws/simulation';
+      
+    const socket = new WebSocket(WS_URL);
     socket.onopen = () => console.log('Connected to backend');
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
