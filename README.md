@@ -46,7 +46,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend runs on **`http://localhost:5173`** (check terminal for the exact port)
+Frontend runs on **`http://localhost:5175`** (check terminal for the exact port)
 
 ### Step 3 — Open in Browser
 Navigate to the URL shown in your terminal. The dashboard auto-connects to the backend via WebSocket.
